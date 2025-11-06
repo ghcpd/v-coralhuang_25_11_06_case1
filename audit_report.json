@@ -1,0 +1,26 @@
+{
+  "issues": [
+    {
+      "id": "timestamp-null-default",
+      "symptom": "timestamp sometimes remains null after inserting a Post",
+      "cause": "Model used a call to datetime.utcnow() at import time instead of passing the function object. This evaluates a fixed timestamp at module load or results in unexpected default behavior, causing some inserts to have null timestamps depending on ORM configuration.",
+      "fix": "Use default=datetime.utcnow (no parentheses) to pass the callable so SQLAlchemy will call it at insert time.",
+      "files_affected": ["models.py"]
+    },
+    {
+      "id": "user-foreignkey-misdeclared",
+      "symptom": "user_id column did not enforce relationship to User or failed to resolve the 'author' backref",
+      "cause": "Foreign key was not declared correctly — for example 'users.id' or missing table name — or no relationship declared on the User side.",
+      "fix": "Declare user_id = Column(Integer, ForeignKey('user.id'), nullable=False) and add 'posts = relationship('Post', backref='author', lazy='dynamic')' to User model.",
+      "files_affected": ["models.py"]
+    }
+  ],
+  "recommendations": [
+    "Always pass callables, not results, as SQLAlchemy default values for timestamp-like columns: default=datetime.utcnow.",
+    "Use explicit ForeignKey('user.id') pointing to the exact table and column name and add an ORM relationship on the parent model.",
+    "Add unit tests to verify automatic timestamp population and relationship backrefs; keep a small in-memory SQLite database for quick CI tests.",
+    "Add constraints like nullable=False when the application requires a Post always bind to a User.",
+    "Consider using UTC-aware datetimes stored in UTC and converting for display layers as needed.",
+    "Add integration tests for migrations if using Alembic to ensure defaults are preserved in production deployments."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "project_name": "flask_blog_app",
+  "files": {
+    "models.py": "from datetime import datetime\nfrom flask_sqlalchemy import SQLAlchemy\n\ndb = SQLAlchemy()\n\nclass User(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    username = db.Column(db.String(64), unique=True, nullable=False)\n    # Relationship defined incorrectly: missing backref\n    posts = db.relationship('Post')\n\nclass Post(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    body = db.Column(db.Text, nullable=False)\n    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())  # ❌ Bug: parentheses cause timestamp to be fixed at import time\n    user_id = db.Column(db.Integer)  # ❌ Bug: missing foreign key constraint\n\n    # Relationship bug: missing backref definition\n    # Should be linked to User via db.ForeignKey('user.id') and backref='author'\n",
+    
+    "test_models.py": "from models import db, User, Post\n\ndef test_post_timestamp_and_relationship():\n    user = User(username='alice')\n    post = Post(body='Testing post timestamp', user_id=user.id)\n\n    # Expected: timestamp should auto-populate with current UTC time\n    assert post.timestamp is not None, 'Timestamp should not be None'\n\n    # Expected: post.author should return the User instance\n    assert hasattr(post, 'author'), 'Post should have an author relationship'\n"
+  },
+  "test_description": "Demonstrates functional bug in SQLAlchemy Post model where timestamp fails to auto-populate due to incorrect default usage (datetime.utcnow()) and missing db.ForeignKey relationship between Post.user_id and User.id. The User-Post relationship also lacks a backref, causing post.author to fail."
+}

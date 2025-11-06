@@ -1,0 +1,27 @@
+{
+  "issues": [
+    {
+      "file": "models.py",
+      "symbol": "Post.timestamp",
+      "problem": "Default value set to datetime.utcnow() with parentheses",
+      "cause": "Calling datetime.utcnow() at import time evaluates to a fixed datetime; SQLAlchemy stores that value as default for all rows",
+      "recommendation": "Use default=datetime.utcnow (pass the callable) so the function is executed at insertion time"
+    },
+    {
+      "file": "models.py",
+      "symbol": "Post.user_id",
+      "problem": "Missing ForeignKey constraint",
+      "cause": "user_id declared as plain Integer so DB and ORM don't enforce referential integrity",
+      "recommendation": "Declare user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) to enforce relationship"
+    },
+    {
+      "file": "models.py",
+      "symbol": "User.posts",
+      "problem": "Missing backref for Post.author",
+      "cause": "Relationship was one-directional; Post had no attribute to resolve its User instance via attribute access",
+      "recommendation": "Use db.relationship('Post', backref='author', lazy='dynamic') on User so Post.author resolves"
+    }
+  ],
+  "fixed_files": ["models.py", "test_models.py"],
+  "notes": "Tests added to validate timestamp auto-population and relationship resolution. Use provided run_test.ps1 on Windows."
+}

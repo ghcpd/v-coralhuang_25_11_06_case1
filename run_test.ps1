@@ -1,0 +1,2 @@
+# PowerShell test runner for Windows
+python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install --upgrade pip; pip install -r requirements.txt; pytest -q --json-report --json-report-file=raw_results.json; python generate_output.py raw_results.json output.json; Write-Output "Test run complete. output.json created."

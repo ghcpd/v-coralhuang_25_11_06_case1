@@ -1,0 +1,25 @@
+{
+  "project": "flask_blog_app",
+  "issues_detected": [
+    {
+      "id": "TS-001",
+      "title": "Timestamp default usage",
+      "cause": "`datetime.utcnow()` was used with parentheses in the default argument which evaluated on import time, causing all Post instances created at runtime to share the same timestamp or the timestamp to be fixed.",
+      "recommendation": "Use `default=datetime.utcnow` (pass the callable itself, without parentheses) so that SQLAlchemy calls it for each new row at insert time.",
+      "fixed": true
+    },
+    {
+      "id": "FK-001",
+      "title": "Missing foreign key and backref between Post and User",
+      "cause": "`Post.user_id` lacked a `db.ForeignKey('user.id')` reference; `User.posts` lacked a `backref`, causing ORM relationship resolution to fail and preventing `post.author` from returning a `User` instance.",
+      "recommendation": "Define `user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)` and add `posts = db.relationship('Post', backref='author', lazy='dynamic')` on User to create a reciprocal relationship.",
+      "fixed": true
+    }
+  ],
+  "summary": "Two functional issues were identified and corrected: the timestamp default function reference and the missing foreign key/backref between Post and User. Tests were added to validate both fixes.",
+  "applied_changes": [
+    "models.py: fixed `timestamp` default to `datetime.utcnow` and added `user_id` with foreign key and a backref on User",
+    "test_models.py: added integration test using an in-memory SQLite DB to confirm timestamp autogeneration and user relationship",
+    "run_test.sh & test_summary.py: scripts to run tests and produce JSON report outputs"
+  ]
+}

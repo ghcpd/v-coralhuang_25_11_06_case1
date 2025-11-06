@@ -1,0 +1,24 @@
+{
+  "project": "flask_blog_app",
+  "issues_detected": [
+    {
+      "title": "Post.timestamp default callable",
+      "cause": "Using datetime.utcnow() evaluated at import time resulted in identical timestamps; replaced with datetime.utcnow callable",
+      "fix": "Use default=datetime.utcnow (no parentheses) so the timestamp is evaluated per-insert",
+      "status": "fixed"
+    },
+    {
+      "title": "Post.user_id foreign key and relationship",
+      "cause": "Missing db.ForeignKey and backref prevented ORM from linking Post and User correctly",
+      "fix": "Set user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) and add backref='author' on User.posts",
+      "status": "fixed"
+    }
+  ],
+  "tests": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "status": "success"
+}

@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "passed": 1,
+    "total": 1,
+    "collected": 1
+  },
+  "tests": [
+    {
+      "nodeid": "test_models.py::test_post_timestamp_and_relationship",
+      "lineno": 17,
+      "outcome": "passed",
+      "keywords": [
+        "test_post_timestamp_and_relationship",
+        "test_models.py",
+        "v-coralhuang_25_11_06_case1"
+      ],
+      "setup": {
+        "duration": 0.08666180001455359,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.008206099999370053,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0003142000059597194,
+        "outcome": "passed"
+      }
+    }
+  ]
+}

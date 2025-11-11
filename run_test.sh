@@ -1,33 +1,63 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-# Create virtualenv if missing
-if [ ! -d "venv" ]; then
-  python -m venv venv
+# One-click test runner script for SQLAlchemy model fixes
+# Sets up environment, runs tests, and generates reports
+
+set -e  # Exit on error
+
+echo "=== Flask Blog App - SQLAlchemy Model Fix Test Runner ==="
+echo ""
+
+# Check if Python is available
+if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
+    echo "Error: Python is not installed or not in PATH"
+    exit 1
 fi
 
-# Activate venv (works in bash)
-source venv/bin/activate
+# Determine Python command
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD=python3
+else
+    PYTHON_CMD=python
+fi
 
-pip install --upgrade pip
-pip install -r requirements.txt
+echo "Using Python: $($PYTHON_CMD --version)"
 
-# Run pytest with JSON output
-pytest --maxfail=1 --disable-warnings -q --json-report --json-report-file=raw_results.json
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    $PYTHON_CMD -m venv venv
+fi
 
-# Generate a simple summary output.json from the pytest json report
-python - <<'PY'
-import json
-p = json.load(open('raw_results.json'))
-summary = {
-  'tests_run': p.get('summary', {}).get('total', 0),
-  'tests_failed': p.get('summary', {}).get('failed', 0),
-  'tests_passed': p.get('summary', {}).get('passed', 0),
-  'tests_skipped': p.get('summary', {}).get('skipped', 0),
-}
-open('output.json','w').write(json.dumps(summary, indent=2))
-print('Generated output.json')
-PY
+# Activate virtual environment
+echo "Activating virtual environment..."
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    source venv/Scripts/activate
+else
+    source venv/bin/activate
+fi
 
-echo "Raw report: raw_results.json"
-echo "Summary: output.json"
+# Upgrade pip
+echo "Upgrading pip..."
+pip install --quiet --upgrade pip
+
+# Install dependencies
+echo "Installing dependencies..."
+pip install --quiet -r requirements.txt
+
+# Run tests with pytest-json-report plugin
+echo ""
+echo "Running tests..."
+pytest test_models.py -v --json-report --json-report-file=raw_results.json || true
+
+# Generate output.json summary
+echo ""
+echo "Generating output.json summary..."
+$PYTHON_CMD generate_report.py
+
+echo ""
+echo "=== Test Run Complete ==="
+echo "Results saved to:"
+echo "  - raw_results.json (pytest JSON report)"
+echo "  - output.json (structured summary)"
+
